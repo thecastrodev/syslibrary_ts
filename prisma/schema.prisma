@@ -22,3 +22,12 @@ model User {
 
   @@map("users")
 }
+
+model Book {
+  id    String  @id @default(uuid())
+  isbn   String  @unique
+  title  String
+  author String 
+
+  @@map("books")
+}
