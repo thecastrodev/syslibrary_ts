@@ -1,7 +1,7 @@
-import { Response, NextFunction } from "express";
-import { Request } from "express";
+import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { AppError } from "../errors/AppError";
-import { verify } from "jsonwebtoken";
+
 import config_env from "../utils/config";
 
 export async function ensureAuthenticate(
@@ -9,22 +9,19 @@ export async function ensureAuthenticate(
   response: Response,
   next: NextFunction
 ) {
-  const auth = request.headers.authorization;
-  if (!auth) {
-    return response.status(401).json({
-      message: "Token required",
-    });
+  const authHeader = request.headers.authorization;
+  if (!authHeader) {
+    throw new AppError("Token requerido", 401);
   }
 
-  const [_, token] = auth.split(" ");
+  const [_, token] = authHeader.split(" ");
 
   try {
-    verify(token, config_env.jwt_key);
-    // const { sub } = verify(token, env.jwtSecretKey);
-    // request.userId = sub as string;
+    const { sub } = jwt.verify(token, config_env.jwt_key);
+    request.idUser = sub as string;
 
-    next();
-  } catch {
-    throw new AppError("Token invalid", 401);
+    return next();
+  } catch (error) {
+    throw new AppError("Token inválido", 401);
   }
 }
