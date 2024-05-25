@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { bookController } from "../singleton";
+import { bookController } from "../bootstrap";
 import { Request, Response } from "express";
 import { ensureAuthenticate } from "middlewares/ensureAuthenticate";
 
