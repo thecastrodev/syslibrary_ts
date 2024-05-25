@@ -1,19 +1,60 @@
 import { Router } from "express";
-import { BooksController } from "../controllers/BooksController";
-// import { ensureAuthenticate } from "../middlewares/ensureAuthenticate";
+import { bookController } from "../singleton";
+import { Request, Response } from "express";
+import { ensureAuthenticate } from "middlewares/ensureAuthenticate";
 
-const booksRoutes = Router();
+const bookRoutes = Router();
 
-const controller = new BooksController();
+// register
+bookRoutes.post(
+  "/register",
+  ensureAuthenticate,
+  async (request: Request, response: Response) => {
+    const { status, body } = await bookController.register(request);
+    response.status(status).json(body);
+  }
+);
 
-// public routes
-booksRoutes.get("/", controller.index);
-booksRoutes.get("/:id", controller.show);
+// list
+bookRoutes.get("/list/", async (request: Request, response: Response) => {
+  const { status, body } = await bookController.list(request);
+  response.status(status).json(body);
+});
 
-// private rotes
-// booksRoutes.use(ensureAuthenticate);
-booksRoutes.post("/", controller.create);
-booksRoutes.put("/:id", controller.update);
-booksRoutes.delete("/:id", controller.delete);
+// list
+bookRoutes.get(
+  "/listByUser/",
+  ensureAuthenticate,
+  async (request: Request, response: Response) => {
+    const { status, body } = await bookController.listByUser(request);
+    response.status(status).json(body);
+  }
+);
 
-export { booksRoutes };
+// update
+bookRoutes.patch(
+  "/update/",
+  ensureAuthenticate,
+  async (request: Request, response: Response) => {
+    const { status, body } = await bookController.patch(request);
+    response.status(status).json(body);
+  }
+);
+
+// delete
+bookRoutes.delete(
+  "/delete/",
+  ensureAuthenticate,
+  async (request: Request, response: Response) => {
+    const { status, body } = await bookController.delete(request);
+    response.status(status).json(body);
+  }
+);
+
+// list books categories
+bookRoutes.get("/categories/", async (request: Request, response: Response) => {
+  const { status, body } = await bookController.listBooksCategories(request);
+  response.status(status).json(body);
+});
+
+export { bookRoutes };

@@ -2,7 +2,7 @@ import { Response, NextFunction } from "express";
 import { Request } from "express";
 import { AppError } from "../errors/AppError";
 import { verify } from "jsonwebtoken";
-import { env } from "../utils/env";
+import config_env from "../utils/config";
 
 export async function ensureAuthenticate(
   request: Request,
@@ -19,7 +19,7 @@ export async function ensureAuthenticate(
   const [_, token] = auth.split(" ");
 
   try {
-    verify(token, env.jwtSecretKey);
+    verify(token, config_env.jwt_key);
     // const { sub } = verify(token, env.jwtSecretKey);
     // request.userId = sub as string;
 

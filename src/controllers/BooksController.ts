@@ -1,106 +1,202 @@
-import { Request, Response } from "express";
-import Zod from "zod";
+import { Request } from "express";
+import { z } from "zod";
 
-import { prisma } from "../libs/prisma";
 import { AppError } from "../errors/AppError";
+import { BookService } from "../services/BookService";
+import { BookUpdate } from "models/Book";
 
-interface Query {
-  page: number;
-}
+export class BookController {
+  service: BookService;
 
-export class BooksController {
-  async index(request: Request, response: Response) {
-    const { page } = request.query as unknown as Query;
+  constructor(service: BookService) {
+    this.service = service;
+  }
+  // register
+  async register(request: Request) {
+    const bodySchema = z
+      .object({
+        title: z.string().min(1),
+        cod: z.string().min(1),
+        editora: z.string().min(1),
+        autor: z.string().min(1),
+        sinopse: z.string().min(1),
+        bookCategoryId: z.string().min(1),
+        qtd: z.number().min(0),
+      })
+      .strict();
 
-    let books;
-    const BOOKS_FOR_PAGE = 2;
-    if (page) {
-      books = await prisma.book.findMany({
-        skip: (page - 1) * BOOKS_FOR_PAGE,
-        take: BOOKS_FOR_PAGE,
-        orderBy: {
-          title: "asc",
-        },
-      });
-    } else books = await prisma.book.findMany();
+    const { title, cod, editora, autor, sinopse, bookCategoryId, qtd } =
+      bodySchema.parse(request.body);
 
-    return response.status(200).json(books);
+    const { idUser } = request;
+
+    const body = await this.service.register(
+      title,
+      cod,
+      editora,
+      autor,
+      sinopse,
+      bookCategoryId,
+      qtd,
+      idUser
+    );
+    return { status: 201, body: body };
   }
 
-  async create(request: Request, response: Response) {
-    const bodySchema = Zod.object({
-      isbn: Zod.string().min(6),
-      title: Zod.string().min(3),
-      author: Zod.string().min(3),
-    }).strict();
+  // list
+  async list(request: Request) {
+    const bodySchema = z
+      .object({
+        page: z.string().default("1"),
+        pageSize: z.string().default("10"),
+        search: z.string().default(""),
+        categoryId: z.string().default(""),
+      })
+      .strict();
 
-    const { isbn, title, author } = bodySchema.parse(request.body);
+    let { page, pageSize, search, categoryId } = bodySchema.parse(
+      request.query
+    );
 
-    const isbnExists = await prisma.book.findUnique({
-      where: { isbn },
-    });
-    if (isbnExists) throw new AppError(`Conflit - ISBN already exists! `, 409);
+    const pageNumber = parseInt(page, 10);
 
-    const book = await prisma.book.create({
-      data: {
-        isbn,
-        title,
-        author,
-      },
-    });
+    // Verifique se a conversão foi bem-sucedida
+    if (isNaN(pageNumber) || pageNumber <= 0)
+      throw new AppError(
+        "O parâmetro pageSize deve ser um número e maior que 0."
+      );
 
-    return response.status(200).json(book);
+    const pageSizeNumber = parseInt(pageSize, 10);
+
+    // Verifique se a conversão foi bem-sucedida
+    if (isNaN(pageSizeNumber) || pageSizeNumber <= 0)
+      throw new AppError(
+        "O parâmetro pageSize deve ser um número e maior que 0."
+      );
+
+    const body = await this.service.list(
+      pageNumber,
+      pageSizeNumber,
+      search,
+      categoryId
+    );
+    return { status: 200, body: body };
   }
 
-  async show(request: Request, response: Response) {
-    const { id } = request.params;
+  // list by user
+  async listByUser(request: Request) {
+    const bodySchema = z
+      .object({
+        page: z.string().default("1"),
+        pageSize: z.string().default("10"),
+        search: z.string().default(""),
+        categoryId: z.string().default(""),
+      })
+      .strict();
 
-    const book = await prisma.book.findFirst({
-      where: { id },
-    });
+    const { idUser } = request;
 
-    if (!book) throw new AppError(`Book not found! `, 404);
+    let { page, pageSize, search, categoryId } = bodySchema.parse(
+      request.query
+    );
 
-    return response.status(200).json(book);
+    const pageNumber = parseInt(page, 10);
+
+    // Verifique se a conversão foi bem-sucedida
+    if (isNaN(pageNumber) || pageNumber <= 0)
+      throw new AppError(
+        "O parâmetro pageSize deve ser um número e maior que 0."
+      );
+
+    const pageSizeNumber = parseInt(pageSize, 10);
+
+    // Verifique se a conversão foi bem-sucedida
+    if (isNaN(pageSizeNumber) || pageSizeNumber <= 0)
+      throw new AppError(
+        "O parâmetro pageSize deve ser um número e maior que 0."
+      );
+
+    const body = await this.service.listByUser(
+      idUser,
+      pageNumber,
+      pageSizeNumber,
+      search,
+      categoryId
+    );
+    return { status: 200, body: body };
   }
 
-  async update(request: Request, response: Response) {
-    const { id } = request.params;
+  // list books categories
+  async listBooksCategories(request: Request) {
+    const bodySchema = z
+      .object({
+        search: z.string().default(""),
+      })
+      .strict();
 
-    const { isbn, title, author } = request.body;
+    let { search } = bodySchema.parse(request.query);
 
-    const bookExists = await prisma.book.findFirst({
-      where: { id },
-    });
-
-    if (!bookExists) throw new AppError("Book not found!", 404);
-
-    let data = {};
-    if (isbn) data = { ...data, isbn };
-    if (title) data = { ...data, title };
-    if (author) data = { ...data, author };
-
-    const book = await prisma.book.update({
-      where: { id },
-      data,
-    });
-
-    return response.status(200).json(book);
+    const body = await this.service.listBooksCategories(search);
+    return { status: 200, body: body };
   }
 
-  async delete(request: Request, response: Response) {
-    const { id } = request.params;
+  // patch
+  async patch(request: Request) {
+    const bodySchema = z
+      .object({
+        title: z.string().nullish(),
+        cod: z.string().nullish(),
+        editora: z.string().nullish(),
+        autor: z.string().nullish(),
+        sinopse: z.string().nullish(),
+        bookCategoryId: z.string().nullish(),
+        qtd: z.number().min(0).nullish(),
+      })
+      .strict();
+    
+    const query = z.object({
+      id: z.string()
+    }).strict()
 
-    const book = await prisma.book.findFirst({
-      where: { id },
-    });
+    
+    const { idUser } = request;
+    
+    const { title, cod, editora, autor, sinopse, bookCategoryId, qtd} =
+    bodySchema.parse(request.body);
+    
+    const {id} = query.parse(request.query)
 
-    if (!book) throw new AppError("Book not found!", 404);
+    if (!id) throw new AppError("id de livro é requerido", 409);
 
-    await prisma.book.delete({
-      where: { id },
-    });
+    let data = new BookUpdate(
+      title,
+      cod,
+      editora,
+      autor,
+      sinopse,
+      bookCategoryId,
+      qtd
+    );
 
-    return response.status(204).json();
+    const body = await this.service.patch(idUser, id, data);
+    return { status: 201, body: body };
+  }
+
+  // delete
+  async delete(request: Request) {
+    const bodySchema = z
+      .object({
+        id: z.string(),
+      })
+      .strict();
+
+    const { id } = bodySchema.parse(request.query);
+
+    if (!id) throw new AppError("id de livro é requerido", 409);
+
+    const { idUser } = request;
+
+    await this.service.delete(idUser, id);
+    return { status: 204, body: null };
   }
 }
