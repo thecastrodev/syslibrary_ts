@@ -9,7 +9,7 @@ const doc = {
   },
   servers: [
     {
-      url: "https://syslibrary_ts.onrender.com/",         
+      url: "https://syslibrary-ts.onrender.com/",
       description: "Production"
     },
     {
