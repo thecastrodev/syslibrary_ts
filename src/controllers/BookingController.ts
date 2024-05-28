@@ -2,7 +2,7 @@ import { Request } from "express";
 import { z } from "zod";
 
 import { AppError } from "../errors/AppError";
-import { BookingService } from "services/BookingService";
+import { BookingService } from "../services/BookingService";
 
 export class BookingController {
   service: BookingService;

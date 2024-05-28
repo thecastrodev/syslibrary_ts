@@ -8,7 +8,7 @@
     "target": "es2020",
     "strict": true,
     "outDir": "./dist" ,
-    "baseUrl": "./",
+    "baseUrl": "./src",
     "paths": {
       "*": ["src/*"]
     }                         

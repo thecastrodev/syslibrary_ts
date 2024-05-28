@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { AppError } from "../errors/AppError";
 import { BookService } from "../services/BookService";
-import { BookUpdate } from "models/Book";
+import { BookUpdate } from "../models/Book";
 
 export class BookController {
   service: BookService;

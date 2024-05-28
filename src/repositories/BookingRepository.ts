@@ -1,4 +1,4 @@
-import { Booking } from "models/Booking";
+import { Booking } from "../models/Booking";
 import { AppError } from "../errors/AppError";
 import { prisma } from "../libs/prisma";
 

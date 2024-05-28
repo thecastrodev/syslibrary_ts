@@ -1,6 +1,6 @@
 import { AppError } from "../errors/AppError";
-import { BookingRepository } from "repositories/BookingRepository";
-import { BookRepository } from "repositories/BookRepository";
+import { BookingRepository } from "../repositories/BookingRepository";
+import { BookRepository } from "../repositories/BookRepository";
 
 export class BookingService {
   bookingRepository: BookingRepository;

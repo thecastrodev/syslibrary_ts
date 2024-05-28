@@ -1,6 +1,6 @@
 import { AppError } from "../errors/AppError";
-import { BookRepository } from "repositories/BookRepository";
-import { Book, BookCategory, BookUpdate } from "models/Book";
+import { BookRepository } from "../repositories/BookRepository";
+import { Book, BookCategory, BookUpdate } from "../models/Book";
 
 
 export class BookService {
