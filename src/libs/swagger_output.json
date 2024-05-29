@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://syslibrary-ts.onrender.com/",
+      "url": "https://syslibrary-ts.onrender.com/",
       "description": "Production"
     },
     {
